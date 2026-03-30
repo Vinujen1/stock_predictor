@@ -12,23 +12,55 @@ export default function MetricsCard({ result }) {
 
       <div className="stats-grid">
         <div className="stat-box">
-          <p className="stat-label">MSE</p>
-          <p className="stat-value">{result.mse.toFixed(2)}</p>
+          <p className="stat-label">Train MSE</p>
+          <p className="stat-value">
+            {result.train_mse != null ? Number(result.train_mse).toFixed(2) : "—"}
+          </p>
         </div>
 
         <div className="stat-box">
-          <p className="stat-label">RMSE</p>
-          <p className="stat-value">{result.rmse.toFixed(2)}</p>
+          <p className="stat-label">Train RMSE</p>
+          <p className="stat-value">
+            {result.train_rmse != null ? Number(result.train_rmse).toFixed(2) : "—"}
+          </p>
         </div>
 
         <div className="stat-box">
-          <p className="stat-label">MAE</p>
-          <p className="stat-value">{result.mae.toFixed(2)}</p>
+          <p className="stat-label">Train MAE</p>
+          <p className="stat-value">
+            {result.train_mae != null ? Number(result.train_mae).toFixed(2) : "—"}
+          </p>
+        </div>
+
+        <div className="stat-box">
+          <p className="stat-label">Test MSE</p>
+          <p className="stat-value">
+            {result.test_mse != null ? Number(result.test_mse).toFixed(2) : "—"}
+          </p>
+        </div>
+
+        <div className="stat-box">
+          <p className="stat-label">Test RMSE</p>
+          <p className="stat-value">
+            {result.test_rmse != null ? Number(result.test_rmse).toFixed(2) : "—"}
+          </p>
+        </div>
+
+        <div className="stat-box">
+          <p className="stat-label">Test MAE</p>
+          <p className="stat-value">
+            {result.test_mae != null ? Number(result.test_mae).toFixed(2) : "—"}
+          </p>
         </div>
 
         <div className="stat-box">
           <p className="stat-label">Train Size</p>
-          <p className="stat-value">{result.train_size}</p>
+          <p className="stat-value">{result.train_size ?? "—"}</p>
+        </div>
+
+        <div className="stat-box">
+          <p className="stat-label">Test Size</p>
+          <p className="stat-value">{result.test_size ?? "—"}</p>
         </div>
       </div>
 
@@ -36,7 +68,7 @@ export default function MetricsCard({ result }) {
         <div>
           <h3>Prediction Preview</h3>
           <ul className="mini-list">
-            {result.predictions_preview.map((value, index) => (
+            {result.predictions_preview?.map((value, index) => (
               <li key={index}>{Number(value).toFixed(2)}</li>
             ))}
           </ul>
@@ -45,7 +77,7 @@ export default function MetricsCard({ result }) {
         <div>
           <h3>Actual Preview</h3>
           <ul className="mini-list">
-            {result.actual_preview.map((value, index) => (
+            {result.actual_preview?.map((value, index) => (
               <li key={index}>{Number(value).toFixed(2)}</li>
             ))}
           </ul>

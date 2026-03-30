@@ -33,10 +33,20 @@ class Trainer:
         df = self.fetcher.load_stock_data(ticker)
         df = self.engineer.prepare_dataset(df)
 
+        if df.empty:
+            raise ValueError("Dataset is empty after preprocessing")
+
+        for col in self.feature_cols + ["target"]:
+            if col not in df.columns:
+                raise ValueError(f"Missing required column: {col}")
+
         X = df[self.feature_cols].values
         y = df["target"].values
 
         split_index = int(len(X) * 0.8)
+
+        if split_index == 0 or split_index == len(X):
+            raise ValueError("Not enough data to split into train and test sets")
 
         X_train = X[:split_index]
         X_test = X[split_index:]
@@ -48,20 +58,28 @@ class Trainer:
 
         self.model.fit(X_train_scaled, y_train)
 
-        y_pred = self.model.predict(X_test_scaled)
+        y_train_pred = self.model.predict(X_train_scaled)
+        y_test_pred = self.model.predict(X_test_scaled)
 
-        mse = mean_squared_error(y_test, y_pred)
-        rmse = root_mean_squared_error(y_test, y_pred)
-        mae = mean_absolute_error(y_test, y_pred)
+        train_mse = mean_squared_error(y_train, y_train_pred)
+        train_rmse = root_mean_squared_error(y_train, y_train_pred)
+        train_mae = mean_absolute_error(y_train, y_train_pred)
+
+        test_mse = mean_squared_error(y_test, y_test_pred)
+        test_rmse = root_mean_squared_error(y_test, y_test_pred)
+        test_mae = mean_absolute_error(y_test, y_test_pred)
 
         return {
             "ticker": ticker.upper(),
             "train_size": len(X_train),
             "test_size": len(X_test),
-            "mse": float(mse),
-            "rmse": float(rmse),
-            "mae": float(mae),
-            "predictions_preview": y_pred[:5].tolist(),
+            "train_mse": float(train_mse),
+            "train_rmse": float(train_rmse),
+            "train_mae": float(train_mae),
+            "test_mse": float(test_mse),
+            "test_rmse": float(test_rmse),
+            "test_mae": float(test_mae),
+            "predictions_preview": y_test_pred[:5].tolist(),
             "actual_preview": y_test[:5].tolist(),
             "last_training_loss": float(self.model.loss_history[-1]),
         }

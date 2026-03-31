@@ -55,7 +55,7 @@ class Predictor:
         df = self.fetcher.load_stock_data(ticker)
         df = self.engineer.prepare_dataset(df)
 
-        # 🔥 CRITICAL FIX: remove NaNs
+        # Remove NaNs
         df = df.dropna()
 
         if df.empty:
@@ -65,14 +65,14 @@ class Predictor:
         latest_row = df.iloc[-1]
         latest_df = pd.DataFrame([latest_row])
 
-        # 🔥 Ensure features exist
+        # Ensure features exist
         for col in self.feature_cols:
             if col not in latest_df.columns:
                 raise ValueError(f"Missing feature column: {col}")
 
         X_latest = latest_df[self.feature_cols].values
 
-        # 🔥 Ensure correct shape
+        # Ensure correct shape
         if X_latest.shape[1] != len(self.feature_cols):
             raise ValueError("Feature shape mismatch during prediction")
 

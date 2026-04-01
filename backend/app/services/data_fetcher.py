@@ -5,16 +5,26 @@ import pandas as pd
 import yfinance as yf
 
 
+# Base directory of the project
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Directory where stock dataset will be stored
 DATASET_DIR = BASE_DIR / "storage" / "datasets"
+
+# Ensures the dataset directory exists
 DATASET_DIR.mkdir(parents=True, exist_ok=True)
 
 
+# Handles fetching, cleaning, saving, and loading stock market data
+# Uses yfinance API to retrieve historical stock data
 class DataFetcher:
+    # Directory where datasets are stored locally
     def __init__(self, dataset_dir: Path = DATASET_DIR):
         self.dataset_dir = dataset_dir
         self.dataset_dir.mkdir(parents=True, exist_ok=True)
 
+    # Fetches historical stock data from Yahoo Finance and clean it
+    # Results in a cleaned stock data with standardized columns
     def fetch_stock_history(
         self,
         ticker: str,
@@ -23,6 +33,7 @@ class DataFetcher:
     ) -> pd.DataFrame:
         ticker = ticker.upper().strip()
 
+        # Download stock data
         df = yf.download(
             tickers=ticker,
             period=period,
@@ -31,6 +42,7 @@ class DataFetcher:
             progress=False
         )
 
+        # Handles case where no data is returned
         if df.empty:
             raise ValueError(f"No data for {ticker}")
 
@@ -76,6 +88,7 @@ class DataFetcher:
 
         df = df.rename(columns=rename_map)
 
+        # Ensure required columns exist
         required_cols = ["date", "open", "high", "low", "close", "volume"]
         missing_cols = [col for col in required_cols if col not in df.columns]
         if missing_cols:
@@ -83,21 +96,25 @@ class DataFetcher:
                 f"Missing required columns for {ticker}: {missing_cols}. Found columns: {list(df.columns)}"
             )
 
+        # Keep only relevant columns
         keep_cols = ["date", "open", "high", "low", "close", "adj_close", "volume"]
         existing_cols = [col for col in keep_cols if col in df.columns]
         df = df[existing_cols].copy()
 
+        # Add ticker column for identification
         df["ticker"] = ticker
         df["date"] = pd.to_datetime(df["date"])
         df = df.sort_values("date").reset_index(drop=True)
 
         return df
 
+    # Saves stock to a CSV file
     def save_stock_data(self, df: pd.DataFrame, ticker: str):
         ticker = ticker.upper().strip()
         file_path = self.dataset_dir / f"{ticker}.csv"
         df.to_csv(file_path, index=False)
 
+    # Load stock data from a saved CSV file
     def load_stock_data(self, ticker: str) -> pd.DataFrame:
         ticker = ticker.upper().strip()
         file_path = self.dataset_dir / f"{ticker}.csv"
@@ -109,11 +126,13 @@ class DataFetcher:
         df["date"] = pd.to_datetime(df["date"])
         return df
 
+    # Fetch stock data and saves it locally
     def fetch_and_save_stock(self, ticker: str):
         df = self.fetch_stock_history(ticker)
         self.save_stock_data(df, ticker)
         return df
 
+    # Fetches and saves multiple stock datasets
     def fetch_multiple_stocks(self, tickers: List[str]) -> Dict[str, pd.DataFrame]:
         results = {}
 
@@ -127,9 +146,11 @@ class DataFetcher:
 
         return results
 
+    # Fetch the most recent data point for a stock
     def fetch_latest_stock_row(self, ticker: str):
         df = self.fetch_stock_history(ticker, period="1mo")
         return df.iloc[-1]
 
+    # Lists all locally saved stock datasets.
     def list_saved_datasets(self):
         return sorted([file.stem.upper() for file in self.dataset_dir.glob("*.csv")])

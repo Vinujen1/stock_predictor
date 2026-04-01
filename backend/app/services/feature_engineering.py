@@ -2,24 +2,22 @@ import pandas as pd
 
 
 class FeatureEngineer:
-    """
-    Creates ML features from stock data.
-    """
-
+    
+    # Creates ML features from stock data. Feature Engineering
     def add_features(self, df: pd.DataFrame) -> pd.DataFrame:
         df = df.copy()
 
-        # --- Returns ---
+        # Returns 
         df["return"] = df["close"].pct_change()
 
-        # --- Moving Averages ---
+        # Moving Averages 
         df["ma_5"] = df["close"].rolling(window=5).mean()
         df["ma_10"] = df["close"].rolling(window=10).mean()
 
-        # --- Volatility ---
+        # Volatility 
         df["volatility_5"] = df["close"].rolling(window=5).std()
 
-        # --- Momentum ---
+        # Momentum
         df["momentum"] = df["close"] - df["close"].shift(5)
 
         return df
